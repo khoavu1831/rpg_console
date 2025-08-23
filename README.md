@@ -25,3 +25,5 @@ luồng chính:
 + 2.3 hành trang -> 2.3.1 trang bị vũ khí
 + 2.4 thông tin player (level, số quái đã tiêu diệt, sức mạnh hiện tại)
 3. thoát (quay lại 1.đăng nhập)
+
+nochatgpt
