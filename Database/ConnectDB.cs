@@ -1,14 +1,11 @@
+
 using MySql.Data.MySqlClient;
 
-class ConnectDB
+public class ConnectDB
 {
-    private string? connectString;
-    public ConnectDB(string server, string user, string password, string database)
+    public static string connectionString = $"server=localhost;user=root;password=;database=rpg_console";
+    public static MySqlConnection GetConnection()
     {
-        connectString = $"server={server}; user={user}; password={password}; database={database}";
-    }
-    public MySqlConnection GetConnection()
-    {
-        return new MySqlConnection(connectString);
+        return new MySqlConnection(connectionString);
     }
 }
