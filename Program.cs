@@ -5,6 +5,5 @@ class Program
     {
         var gameplay = new MainProgress();
         gameplay.Run();
-
     }
 }

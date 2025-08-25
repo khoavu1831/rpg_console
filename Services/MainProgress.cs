@@ -2,51 +2,81 @@ using RPG_Console.Services;
 
 class MainProgress
 {
+    bool isRunning = true;
+    string? name;
+    int choice;
     public void Run()
     {
-        bool isRunning = true;
-        var player = new PlayerServices();
-        string? name;
-        int choose = 0;
+        var playerServices = new PlayerServices();
+        Player? player = null;
 
+        // Create new or Load player
         Console.WriteLine("---WELCOME TO RPG_CONSOLE---");
-        Console.WriteLine("Do you want to play new or create new?\n1. New\n2. Load");
-        // choose = Convert.ToInt32(Console.ReadLine());
-        // switch (choose)
-        // {
-        //     case 1:
-        //         break;
-        //     case 2:
-        //         break;
-        //     default:
-            
-        // }
-        do
-        {
-            Console.Write("Enter your nickname: ");
-            name = Console.ReadLine();
-            bool isDuplicateName = player.IsDuplicatePlayerName(name);
+        Console.WriteLine("Do you want to play new or load?\n1. New\n2. Load");
+        Console.Write("Your choice: ");
 
-            if (isDuplicateName)
-            {
-                Console.WriteLine("Error: , please choose another nickname");
-                Console.Write(@"Please choose: 1. Enter nickname again / 0. Exit: ");
-                choose = Convert.ToInt32(Console.ReadLine());
-                switch (choose)
+        choice = playerServices.EnterChoice();
+        switch (choice)
+        {
+            // Create new player
+            case 1:
+                while (true)
                 {
-                    case 0:
+                    Console.Write("Enter your nickname: ");
+                    name = Console.ReadLine();
+
+                    bool isDuplicateName = playerServices.IsDuplicatePlayerName(name);
+                    if (!isDuplicateName)
+                    {
+                        playerServices.CreatePlayer(name);
+                        player = playerServices.LoadPlayer(name);
+                        Console.WriteLine($"Hi {name}! Having fun!");
+                        break;
+                    }
+
+                    Console.WriteLine("Error: Name is existed, please choose another nickname");
+                    Console.Write(@"Please choose: 1. Enter another nickname / 0. Exit: ");
+                    choice = playerServices.EnterChoice();
+
+                    if (choice == 0)
+                    {
                         Console.WriteLine("You exited.");
                         return;
-                    case 1:
-                        break;
-                    default:
-                        break;
+                    }
                 }
-            }
-        } while (player.IsDuplicatePlayerName(name));
+                break;
 
-        player.CreatePlayer(name);
-        Console.WriteLine($"Hi {name}! Having fun!");
+            // Load player
+            case 2:
+                while (true)
+                {
+                    Console.Write("Enter your nickname: ");
+                    name = Console.ReadLine();
+
+                    player = playerServices.LoadPlayer(name);
+
+                    if (player == null)
+                    {
+                        Console.WriteLine("Error: Not found player.");
+                        Console.Write(@"Please choose: 1. Try again / 0. Exit: ");
+                        choice = playerServices.EnterChoice();
+                    }
+
+                    if (choice == 0)
+                    {
+                        Console.WriteLine("You exited.");
+                        return;
+                    }
+                }
+
+            default:
+                break;
+        }
+
+        // Loop create new / load
+
+
+
 
         while (isRunning)
         {
@@ -58,9 +88,9 @@ class MainProgress
             Console.WriteLine("5. Exit game");
 
             Console.Write("Choose your option: ");
-            choose = Convert.ToInt32(Console.ReadLine());
+            choice = playerServices.EnterChoice();
 
-            switch (choose)
+            switch (choice)
             {
                 case 1:
                     break;
@@ -69,8 +99,10 @@ class MainProgress
                 case 3:
                     break;
                 case 4:
+                    ShowInfoPlayer(player);
                     break;
                 case 5:
+                    Console.WriteLine("You exited. See you again!");
                     isRunning = false;
                     break;
                 default:
@@ -78,7 +110,12 @@ class MainProgress
                     break;
             }
         }
-
-
     }
+    
+
+    public void ShowInfoPlayer(Player player)
+    {
+        Console.WriteLine($"Name: {player.Name}\nLevel: {player.Level}\nEXP: {player.Exp}\nAttack: {player.Attack}\nHP: {player.HP}\nMonster Killed: {player.MonsterKilled}");
+    }
+
 }

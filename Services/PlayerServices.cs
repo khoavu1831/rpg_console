@@ -1,9 +1,10 @@
 using MySql.Data.MySqlClient;
 using RPG_Console.Database;
 namespace RPG_Console.Services;
+
 class PlayerServices
 {
-    public void CreatePlayer(string name)
+    public void CreatePlayer(string? name)
     {
         using (var conn = ConnectDB.GetConnection())
         {
@@ -39,18 +40,20 @@ class PlayerServices
         }
         return null;
     }
-    public void ShowInfoPlayers()
+    public void GetInfoPlayer(Player player)
     {
         using (var conn = ConnectDB.GetConnection())
         {
             conn.Open();
-            var queyGetPlayers = "SELECT * FROM players";
+            var queyGetPlayers = "SELECT * FROM players WHERE id_player = @id";
             using (var cmd = new MySqlCommand(queyGetPlayers, conn))
             {
-                MySqlDataReader reader = cmd.ExecuteReader();
+                cmd.Parameters.AddWithValue("@id_player", player.ID);
+                var reader = cmd.ExecuteReader();
+
                 while (reader.Read())
                 {
-                    Console.WriteLine($"{reader["id_player"]} {reader["name"],10} {reader["level"]}");
+                    Console.WriteLine($"{reader["id_player"]} {reader["name"],10} {reader["level"]} {reader["hp"]} {reader["attack"]}");
                 }
             }
         }
@@ -76,5 +79,10 @@ class PlayerServices
                 }
             }
         }
+    }
+    public int EnterChoice()
+    {
+        int choice = Convert.ToInt32(Console.ReadLine());
+        return choice;
     }
 }
