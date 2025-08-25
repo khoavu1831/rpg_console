@@ -1,9 +1,10 @@
-﻿class Program
+﻿using RPG_Console.Services;
+class Program
 {
     public static void Main(string[] args)
     {
-        PlayerServices player = new PlayerServices();
-        player.CreatePlayer();
-        player.Out();
+        var gameplay = new MainProgress();
+        gameplay.Run();
+
     }
 }

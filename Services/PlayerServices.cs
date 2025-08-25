@@ -1,47 +1,80 @@
 using MySql.Data.MySqlClient;
-
+using RPG_Console.Database;
+namespace RPG_Console.Services;
 class PlayerServices
 {
-    public void Login()
-    {
-        Console.Write("Nhap ten nguoi choi:");
-        string? name = Console.ReadLine();
-
-        using (var conn = ConnectDB.GetConnection())
-        {
-            conn.Open();
-            var query = "INSERT INTO players (name) VALUES (@name)";
-            var cmd = new MySqlCommand(query, conn);
-            cmd.Parameters.AddWithValue("@name", name);
-            cmd.ExecuteNonQuery();
-        }
-    }
-    public void Out()
+    public void CreatePlayer(string name)
     {
         using (var conn = ConnectDB.GetConnection())
         {
             conn.Open();
-            var query = "SELECT * FROM players";
-            var cmd = new MySqlCommand(query, conn);
-            MySqlDataReader reader = cmd.ExecuteReader();
-            while (reader.Read())
+            var createPlayerQuery = "INSERT INTO players (name) VALUES (@name)";
+            using (var cmd = new MySqlCommand(createPlayerQuery, conn))
             {
-                Console.WriteLine($"id={reader["id_player"]}-name={reader["name"]}-level={reader["level"]}");
+                cmd.Parameters.AddWithValue("@name", name);
+                cmd.ExecuteNonQuery();
             }
         }
     }
-    public void CreatePlayer()
+    public Player? LoadPlayer(string name)
     {
-        Console.WriteLine("Nhap ten nguoi choi: ");
-        string? nameInput = Console.ReadLine();
-
         using (var conn = ConnectDB.GetConnection())
         {
             conn.Open();
-            var query = "INSERT INTO players (name) VALUES (@name)";
-            var cmd = new MySqlCommand(query, conn);
-            cmd.Parameters.AddWithValue("@name", nameInput);
-            cmd.ExecuteNonQuery();
+            var queryLoadPlayer = "SELECT * FROM players WHERE name = @name";
+            using (var cmd = new MySqlCommand(queryLoadPlayer, conn))
+            {
+                cmd.Parameters.AddWithValue("@name", name);
+                var reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    return new Player
+                    {
+                        ID = Convert.ToInt32(reader["id_player"]),
+                        Name = reader["name"].ToString(),
+                        Level = Convert.ToInt32(reader["level"])
+                    };
+                }
+            }
+        }
+        return null;
+    }
+    public void ShowInfoPlayers()
+    {
+        using (var conn = ConnectDB.GetConnection())
+        {
+            conn.Open();
+            var queyGetPlayers = "SELECT * FROM players";
+            using (var cmd = new MySqlCommand(queyGetPlayers, conn))
+            {
+                MySqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    Console.WriteLine($"{reader["id_player"]} {reader["name"],10} {reader["level"]}");
+                }
+            }
+        }
+    }
+    public bool IsDuplicatePlayerName(string? nameCheck)
+    {
+        using (var conn = ConnectDB.GetConnection())
+        {
+            conn.Open();
+            var queryCheckNameDuplicate = "SELECT COUNT(*) FROM players WHERE name = @nameCheck";
+            using (var cmd = new MySqlCommand(queryCheckNameDuplicate, conn))
+            {
+                cmd.Parameters.AddWithValue("@nameCheck", nameCheck);
+                int count = Convert.ToInt32(cmd.ExecuteScalar());
+
+                if (count > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
     }
 }
