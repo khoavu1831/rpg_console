@@ -1,47 +1,60 @@
 using RPG_Console.Services;
-
+using U = RPG_Console.Common.Utils;
 class MainProgress
 {
-    bool isRunning = true;
-    string? name;
-    int choice;
+    private bool isRunning = true;
+    private string? name;
+    private int choice;
     public void Run()
     {
-        var playerServices = new PlayerServices();
+        var playerService = new PlayerService();
         Player? player = null;
 
         // Create new or Load player
         Console.WriteLine("---WELCOME TO RPG_CONSOLE---");
-        Console.WriteLine("Do you want to play new or load?\n1. New\n2. Load");
-        Console.Write("Your choice: ");
+        choice = U.EnterChoiceOptionEndline("Do you want to play new or load?", "1. New", "2. Load");
 
-        choice = playerServices.EnterChoice();
         switch (choice)
         {
             // Create new player
             case 1:
                 while (true)
                 {
-                    Console.Write("Enter your nickname: ");
-                    name = Console.ReadLine();
+                    while (true)
+                    {
+                        name = U.EnterRequest("Enter your nickname: ");
+                        if (string.IsNullOrEmpty(name))
+                        {
+                            U.WarningMsg("Name cant null or empty");
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
 
-                    bool isDuplicateName = playerServices.IsDuplicatePlayerName(name);
+                    bool isDuplicateName = playerService.IsDuplicatePlayerName(name);
                     if (!isDuplicateName)
                     {
-                        playerServices.CreatePlayer(name);
-                        player = playerServices.LoadPlayer(name);
+                        playerService.CreatePlayer(name);
+                        player = playerService.LoadPlayer(name);
                         Console.WriteLine($"Hi {name}! Having fun!");
                         break;
                     }
 
-                    Console.WriteLine("Error: Name is existed, please choose another nickname");
-                    Console.Write(@"Please choose: 1. Enter another nickname / 0. Exit: ");
-                    choice = playerServices.EnterChoice();
+                    U.ErrorMsg("Name is existed, please choose another nickname");
+                    choice = U.EnterChoiceOptionInline("Please choose:", "1. Enter another nickname", "0. Exit");
 
                     if (choice == 0)
                     {
                         Console.WriteLine("You exited.");
                         return;
+                    }
+
+                    if (player != null)
+                    {
+                        Console.WriteLine($"Welcome back! {player.Name}");
+                        break;
                     }
                 }
                 break;
@@ -50,16 +63,37 @@ class MainProgress
             case 2:
                 while (true)
                 {
-                    Console.Write("Enter your nickname: ");
-                    name = Console.ReadLine();
+                    while (true)
+                    {
+                        name = U.EnterRequest("Enter your nickname: ");
+                        if (string.IsNullOrEmpty(name))
+                        {
+                            U.WarningMsg("Warning: Name cant null or empty.");
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
 
-                    player = playerServices.LoadPlayer(name);
+                    player = playerService.LoadPlayer(name);
 
                     if (player == null)
                     {
-                        Console.WriteLine("Error: Not found player.");
-                        Console.Write(@"Please choose: 1. Try again / 0. Exit: ");
-                        choice = playerServices.EnterChoice();
+                        U.ErrorMsg("Not found player.");
+                        choice = U.EnterChoiceOptionInline("Please choose: ", "1. Try again", "2. Create new?", "0. Exit");
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                    if (choice == 2)
+                    {
+                        playerService.CreatePlayer(name);
+                        player = playerService.LoadPlayer(name);
+                        Console.WriteLine($"Hi {name}! Having fun!");
+                        break;
                     }
 
                     if (choice == 0)
@@ -68,27 +102,26 @@ class MainProgress
                         return;
                     }
                 }
+                break;
 
             default:
                 break;
         }
 
-        // Loop create new / load
-
-
-
-
+        // Main loop
         while (isRunning)
         {
-            Console.WriteLine("-----RPG CONSOLE-----");
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            Console.WriteLine("=====RPG CONSOLE=====");
+            Console.ResetColor();
             Console.WriteLine("1. Farming");
             Console.WriteLine("2. Fighting");
             Console.WriteLine("3. Inventory");
             Console.WriteLine("4. Infomation");
-            Console.WriteLine("5. Exit game");
+            Console.WriteLine("5. Ranking");
+            Console.WriteLine("0. Exit game");
 
-            Console.Write("Choose your option: ");
-            choice = playerServices.EnterChoice();
+            choice = U.EnterChoiceOption("Choose your option: ");
 
             switch (choice)
             {
@@ -99,23 +132,27 @@ class MainProgress
                 case 3:
                     break;
                 case 4:
-                    ShowInfoPlayer(player);
+                    if (player != null)
+                    {
+                        playerService.GetInfoPlayer(player);
+                    }
+                    else
+                    {
+                        U.ErrorMsg("Player not loaded");
+                    }
                     break;
                 case 5:
+                    U.Title("==RANKING==");
+                    playerService.GetRankPlayers();
+                    break;
+                case 0:
                     Console.WriteLine("You exited. See you again!");
                     isRunning = false;
                     break;
                 default:
-                    Console.WriteLine("Please choose from 1 to 4!");
+                    U.WarningMsg("Please choose from 1 to 4!");
                     break;
             }
         }
     }
-    
-
-    public void ShowInfoPlayer(Player player)
-    {
-        Console.WriteLine($"Name: {player.Name}\nLevel: {player.Level}\nEXP: {player.Exp}\nAttack: {player.Attack}\nHP: {player.HP}\nMonster Killed: {player.MonsterKilled}");
-    }
-
 }

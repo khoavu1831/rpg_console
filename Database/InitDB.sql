@@ -1,46 +1,47 @@
 create database if not exists rpg_console;
 
 create table Players(
-    id_player int auto_increment primary key,
+    id int auto_increment primary key,
     name varchar(30),
-    level int default(1),
-    exp int,
-    attack int,
-    hp int,
-    monster_killed int
+    level int default 1,
+    exp int default 0,
+    atk int default 10,
+    hp int default 100,
+    monster_killed int default 0
 );
 
 create table Monsters(
-    id_monster int auto_increment primary key,
+    id int auto_increment primary key,
     name varchar(30),
     exp_drop int,
     hp int,
     attack int
 );
 
-create table Inventories(
-    id_inventory int auto_increment primary key,
-    id_player int,
-    foreign key (id_player) references Players(id_player)
-);
-
 create table Items(
-    id_item int auto_increment primary key,
+    id int auto_increment primary key,
     name varchar(30),
     type_item varchar(10),
     hp_restore int,
     attack_buff int,
-    def_buff int,
-    id_inventory int,
-    foreign key (id_inventory) references Inventories(id_inventory)
+    def_buff int
 );
 
 create table Weapons(
-    name varchar(20) primary key,
-    attack_buff int,
-    def_buff int,
-    id_inventory int,
-    foreign key (id_inventory) references Inventories(id_inventory)
+    id int auto_increment primary key,
+    name varchar(20),
+    atk int,
+    def int
+);
+
+create table Inventories(
+    id int auto_increment primary key,
+    player_id int,
+    item_id int,
+    weapon_id int,
+    foreign key (player_id) references Players(id),
+    foreign key (item_id) references Items(id),
+    foreign key (weapon_id) references Weapons(id)
 );
 
 -- create table Quest();
