@@ -8,6 +8,7 @@ class MainProgress
     public void Run()
     {
         var playerService = new PlayerService();
+        var lootingService = new LootingService();
         Player? player = null;
 
         // Create new or Load player
@@ -114,7 +115,7 @@ class MainProgress
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
             Console.WriteLine("=====RPG CONSOLE=====");
             Console.ResetColor();
-            Console.WriteLine("1. Farming");
+            Console.WriteLine("1. Looting");
             Console.WriteLine("2. Fighting");
             Console.WriteLine("3. Inventory");
             Console.WriteLine("4. Infomation");
@@ -126,6 +127,7 @@ class MainProgress
             switch (choice)
             {
                 case 1:
+                    lootingService.Looting();
                     break;
                 case 2:
                     break;

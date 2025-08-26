@@ -20,14 +20,15 @@ INSERT INTO Monsters (name, exp_drop, hp, attack) VALUES
 ('Wyvern', 80, 250, 30),
 ('Demon Lord', 200, 500, 50);
 
-INSERT INTO Items (name, type_item, hp_restore, attack_buff, def_buff) VALUES
-('Apple', 'food', 20, 0, 0),
-('Bread', 'food', 35, 0, 0),
-('Healing Potion', 'potion', 100, 0, 0),
-('Elixir', 'potion', 200, 0, 0),
-('Strength Potion', 'potion', 0, 15, 0),
-('Defense Potion', 'potion', 0, 0, 15),
-('Roasted Meat', 'food', 60, 5, 0),
-('Magic Herb', 'potion', 50, 10, 5),
-('Energy Drink', 'potion', 30, 10, 0),
-('Shield Scroll', 'scroll', 0, 0, 25);
+INSERT INTO Items (name, type_item, hp_restore, attack_buff, def_buff, rate_drop) VALUES
+('Apple', 'food', 20, 0, 0, 0.20),
+('Bread', 'food', 35, 0, 0, 0.15),
+('Healing Potion', 'potion', 100, 0, 0, 0.10),
+('Elixir', 'potion', 200, 0, 0, 0.05),
+('Strength Potion', 'potion', 0, 15, 0, 0.08),
+('Defense Potion', 'potion', 0, 0, 15, 0.07),
+('Roasted Meat', 'food', 60, 5, 0, 0.12),
+('Magic Herb', 'potion', 50, 10, 5, 0.05),
+('Energy Drink', 'potion', 30, 10, 0, 0.10),
+('Cocacola', 'potion', 0, 0, 25, 0.08);
+

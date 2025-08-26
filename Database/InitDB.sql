@@ -24,7 +24,8 @@ create table Items(
     type_item varchar(10),
     hp_restore int,
     attack_buff int,
-    def_buff int
+    def_buff int,
+    rate_drop double
 );
 
 create table Weapons(
