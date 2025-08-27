@@ -79,7 +79,7 @@ class PlayerService
     public Player? InitPlayer()
     {
         Player? player = null;
-        var choice = U.EnterChoiceOptionEndline("Do you want to play new or load?", "1. New", "2. Load");
+        var choice = U.EnterOptionEndline("Do you want to play new or load?", "1. New", "2. Load");
         switch (choice)
         {
             // Create new player
@@ -114,7 +114,7 @@ class PlayerService
                     if (player == null)
                     {
                         U.ErrorMsg("Not found player.");
-                        choice = U.EnterChoiceOptionInline("Please choose: ", "1. Try again", "2. Create new?", "0. Exit");
+                        choice = U.EnterOptionInline("Please choose: ", "1. Try again", "2. Create new?", "0. Exit");
                         if (choice == 2)
                         {
                             CreatePlayer(name);

@@ -27,7 +27,7 @@ class MainProgress
             Console.WriteLine("5. Ranking");
             Console.WriteLine("0. Exit game");
 
-            var choice = U.EnterChoiceOption("Choose your option: ");
+            var choice = U.EnterOption("Choose your option: ");
 
             switch (choice)
             {

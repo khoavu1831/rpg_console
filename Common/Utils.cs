@@ -50,7 +50,7 @@ public static class Utils
         Console.ResetColor();
         return Console.ReadLine() ?? "";
     }
-    public static int EnterChoiceOption(string msg)
+    public static int EnterOption(string msg)
     {
         Console.ForegroundColor = ConsoleColor.Green;
         Console.Write(msg);
@@ -58,7 +58,7 @@ public static class Utils
         int choice = Convert.ToInt32(Console.ReadLine());
         return choice;
     }
-    public static int EnterChoiceOptionEndline(string question, string choice1, string choice2)
+    public static int EnterOptionEndline(string question, string choice1, string choice2)
     {
         Console.ForegroundColor = ConsoleColor.Green;
         Console.Write($"{question}");
@@ -71,7 +71,7 @@ public static class Utils
         int choice = Convert.ToInt32(Console.ReadLine());
         return choice;
     }
-    public static int EnterChoiceOptionInline(string question, string choice1, string choice2)
+    public static int EnterOptionInline(string question, string choice1, string choice2)
     {
         Console.ForegroundColor = ConsoleColor.Green;
         Console.Write($"{question}");
@@ -81,7 +81,7 @@ public static class Utils
         int choice = Convert.ToInt32(Console.ReadLine());
         return choice;
     }
-    public static int EnterChoiceOptionInline(string question, string choice1, string choice2, string choice3)
+    public static int EnterOptionInline(string question, string choice1, string choice2, string choice3)
     {
         Console.ForegroundColor = ConsoleColor.Green;
         Console.Write($"{question}");
