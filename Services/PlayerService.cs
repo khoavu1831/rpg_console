@@ -1,35 +1,23 @@
 using MySql.Data.MySqlClient;
 using RPG_Console.Database;
+using U = RPG_Console.Common.Utils;
 namespace RPG_Console.Services;
 
 class PlayerService
 {
-    public void CreatePlayer(string? name)
+    public List<Player> GetAllPlayers()
     {
+        var players = new List<Player>();
         using (var conn = ConnectDB.GetConnection())
         {
             conn.Open();
-            var createPlayerQuery = "INSERT INTO players (name) VALUES (@name)";
-            using (var cmd = new MySqlCommand(createPlayerQuery, conn))
+            var query = "SELECT * FROM players";
+            using (var cmd = new MySqlCommand(query, conn))
             {
-                cmd.Parameters.AddWithValue("@name", name);
-                cmd.ExecuteNonQuery();
-            }
-        }
-    }
-    public Player? LoadPlayer(string name)
-    {
-        using (var conn = ConnectDB.GetConnection())
-        {
-            conn.Open();
-            var queryLoadPlayer = "SELECT * FROM players WHERE name = @name";
-            using (var cmd = new MySqlCommand(queryLoadPlayer, conn))
-            {
-                cmd.Parameters.AddWithValue("@name", name);
                 var reader = cmd.ExecuteReader();
-                if (reader.Read())
+                while (reader.Read())
                 {
-                    return new Player
+                    players.Add(new Player
                     {
                         ID = Convert.ToInt32(reader["id"]),
                         Name = reader["name"].ToString(),
@@ -38,73 +26,108 @@ class PlayerService
                         Attack = Convert.ToInt32(reader["atk"]),
                         Exp = Convert.ToInt32(reader["exp"]),
                         MonsterKilled = Convert.ToInt32(reader["monster_killed"])
-                    };
+                    });
                 }
             }
         }
-        return null;
+        return players;
     }
-    public void GetInfoPlayer(Player player)
+    public void CreatePlayer(string? name)
     {
         using (var conn = ConnectDB.GetConnection())
         {
             conn.Open();
-            var queyGetPlayers = "SELECT * FROM players WHERE id = @id";
-            using (var cmd = new MySqlCommand(queyGetPlayers, conn))
+            var query = "INSERT INTO players (name) VALUES (@name)";
+            using (var cmd = new MySqlCommand(query, conn))
             {
-                cmd.Parameters.AddWithValue("@id", player.ID);
-                var reader = cmd.ExecuteReader();
+                cmd.Parameters.AddWithValue("@name", name);
+                cmd.ExecuteNonQuery();
+            }
+        }
+    }
+    public Player? LoadPlayer(string name)
+    {
+        return GetAllPlayers().FirstOrDefault(player => player.Name == name);
+    }
+    public void PrintInfoPlayer(Player player)
+    {
+        U.Title("===Information===");
+        var info = GetAllPlayers().FirstOrDefault(p => p.ID == player.ID);
 
-                while (reader.Read())
-                {
-                    Console.WriteLine($"{reader["id"]} {reader["name"],10} {reader["level"],10} {reader["hp"],10} {reader["atk"],10} {reader["monster_killed"],10}");
-                }
-            }
+        if (player != null)
+        {
+            Console.WriteLine($"Name: {player.Name,-20}\nLevel: {player.Level,-10}\nHP: {player.HP,-10}\nAttack: {player.Attack,-10}\nMonster Killed: {player.MonsterKilled,-10}");
         }
     }
-    public void GetRankPlayers()
+    public void PrintRanking()
     {
-        Console.WriteLine($"{"Top", -6} {"Name", -20} {"Level", -10} {"HP", -10} {"Attack", -10} {"MonsterKilled", -10}");
-        using (var conn = ConnectDB.GetConnection())
-        {
-            conn.Open();
-            var queryGetRankPlayers = "SELECT * FROM players ORDER BY monster_killed DESC";
-            using (var cmd = new MySqlCommand(queryGetRankPlayers, conn))
-            {
-                var reader = cmd.ExecuteReader();
-                int i = 1;
-                while (reader.Read())
-                {
-                    Console.WriteLine($"{i, -6} {reader["name"],-20} {reader["level"],-10} {reader["hp"], -10} {reader["atk"], -10} {reader["monster_killed"],-10}");
-                    i++;
-                }
-            }
-        }
-    }
-    public bool IsDuplicatePlayerName(string? nameCheck)
-    {
-        using (var conn = ConnectDB.GetConnection())
-        {
-            conn.Open();
-            var queryCheckNameDuplicate = "SELECT COUNT(*) FROM players WHERE name = @nameCheck";
-            using (var cmd = new MySqlCommand(queryCheckNameDuplicate, conn))
-            {
-                cmd.Parameters.AddWithValue("@nameCheck", nameCheck);
-                int count = Convert.ToInt32(cmd.ExecuteScalar());
+        U.Title("=== RANKING ===");
+        Console.WriteLine($"{"Top",-6} {"Name",-20} {"Level",-10} {"HP",-10} {"Attack",-10} {"MonsterKilled",-10}");
 
-                if (count > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
+        var ranked = GetAllPlayers()
+                    .OrderByDescending(p => p.MonsterKilled)
+                    .Select((p, index) => new { Rank = index + 1, Player = p });
+        foreach (var item in ranked)
+        {
+            Console.WriteLine($"{item.Rank,-6} {item.Player.Name,-20} {item.Player.Level,-10} {item.Player.HP,-10} {item.Player.Attack,-10} {item.Player.MonsterKilled,-10}");
         }
     }
-    public void ShowInfoPlayer(Player player)
+    public bool IsDuplicatePlayerName(string? name)
     {
-        Console.WriteLine($"Name: {player.Name}\nLevel: {player.Level}\nEXP: {player.Exp}\nAttack: {player.Attack}\nHP: {player.HP}\nMonster Killed: {player.MonsterKilled}");
+        return GetAllPlayers().Any(player => player.Name == name);
+    }
+    public Player? InitPlayer()
+    {
+        Player? player = null;
+        var choice = U.EnterChoiceOptionEndline("Do you want to play new or load?", "1. New", "2. Load");
+        switch (choice)
+        {
+            // Create new player
+            case 1:
+                while (true)
+                {
+                    var name = U.EnterRequest("Enter your nickname: ");
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        U.WarningMsg("Name cant be null or empty");
+                        continue;
+                    }
+                    if (IsDuplicatePlayerName(name))
+                    {
+                        U.ErrorMsg("Name is existed, please choose another nickname");
+                        continue;
+                    }
+
+                    CreatePlayer(name);
+                    player = LoadPlayer(name);
+                    Console.WriteLine($"Hi {name}! Having fun!");
+                    break;
+                }
+                break;
+
+            // Load player
+            case 2:
+                while (true)
+                {
+                    var name = U.EnterRequest("Enter your nickname: ");
+                    player = LoadPlayer(name);
+                    if (player == null)
+                    {
+                        U.ErrorMsg("Not found player.");
+                        choice = U.EnterChoiceOptionInline("Please choose: ", "1. Try again", "2. Create new?", "0. Exit");
+                        if (choice == 2)
+                        {
+                            CreatePlayer(name);
+                            player = LoadPlayer(name);
+                            Console.WriteLine($"Hi {name}! Having fun!");
+                            break;
+                        }
+                        else if (choice == 0) return null;
+                    }
+                    else break;
+                }
+                break;
+        }
+        return player;
     }
 }

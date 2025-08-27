@@ -5,12 +5,12 @@ namespace RPG_Console.Services;
 
 class ItemService
 {
-    public List<Item> items = new List<Item>();
-    public List<Item> GetAllInfoItems()
+    private static readonly Random _random = new();
+    public List<Item> GetAllItems()
     {
+        var items = new List<Item>();
         using (var conn = ConnectDB.GetConnection())
         {
-            items.Clear();
             conn.Open();
             var queryGetItems = "SELECT * FROM items";
             using (var cmd = new MySqlCommand(queryGetItems, conn))
@@ -18,7 +18,7 @@ class ItemService
                 var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    var item = new Item
+                    items.Add(new Item
                     {
                         ID = Convert.ToInt32(reader["id"]),
                         Name = reader["name"].ToString(),
@@ -27,8 +27,7 @@ class ItemService
                         AttackBuff = Convert.ToInt32(reader["attack_buff"]),
                         DefBuff = Convert.ToInt32(reader["def_buff"]),
                         RateDrop = Convert.ToDouble(reader["rate_drop"])
-                    };
-                    items.Add(item);
+                    });
                 }
             }
         }
@@ -36,17 +35,14 @@ class ItemService
     }
     public Item? GetItemFromRateDrop()
     {
-        var items = GetAllInfoItems();
-        double randomRateDrop = new Random().NextDouble();
-        double totalRateDrop = 0.0;
-        foreach (var item in items)
+        var items = GetAllItems();
+        double randomRate = _random.NextDouble();
+        double cumulative = 0.0;
+
+        return items.FirstOrDefault(item =>
         {
-            totalRateDrop += item.RateDrop;
-            if (randomRateDrop <= totalRateDrop)
-            {
-                return item;
-            }
-        }
-        return null;
+            cumulative += item.RateDrop;
+            return randomRate <= cumulative;
+        });
     }
 }

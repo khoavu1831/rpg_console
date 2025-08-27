@@ -4,8 +4,28 @@ public static class Utils
 {
     public static void Title(string msg)
     {
+        Console.WriteLine();
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine(msg);
+        Console.ResetColor();
+    }
+    public static void Title(string msg, ConsoleColor color)
+    {
+        Console.WriteLine();
+        Console.ForegroundColor = color;
+        Console.WriteLine(msg);
+        Console.ResetColor();
+    }
+    public static void TitleNonEndline(string msg)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.Write(msg);
+        Console.ResetColor();
+    }
+    public static void TitleNonEndline(string msg, ConsoleColor color)
+    {
+        Console.ForegroundColor = color;
+        Console.Write(msg);
         Console.ResetColor();
     }
     public static void ErrorMsg(string msg)

@@ -1,53 +1,51 @@
-using MySql.Data.MySqlClient;
-using RPG_Console.Database;
 using U = RPG_Console.Common.Utils;
 namespace RPG_Console.Services;
 
 class LootingService
 {
+    private readonly ItemService _itemService = new();
     public List<Item> LootItems()
     {
-        var itemService = new ItemService();
-        var itemsLoot = new List<Item>();
-        var loop = true;
+        var lootedItems = new List<Item>();
+        bool isLooting = true;
 
-        U.Title("Press \"s\" to stop looting...");
-
-        while (loop)
+        while (isLooting)
         {
-            var deplay = new Random().Next(3000, 8000);
-            Thread.Sleep(deplay);
+            Thread.Sleep(new Random().Next(3000, 8000));
+            var itemDrop = _itemService.GetItemFromRateDrop();
 
-            var itemDrop = itemService.GetItemFromRateDrop();
             if (itemDrop != null)
             {
-                itemsLoot.Add(itemDrop);
+                lootedItems.Add(itemDrop);
                 Console.WriteLine($"[{DateTime.Now:T}] You loot [{itemDrop.Name}]");
             }
 
-            if (Console.KeyAvailable)
-            {
-                var key = Console.ReadKey(true);
-                if (key.Key == ConsoleKey.S)
-                {
-                    loop = false;
-                }
+            Console.SetCursorPosition(0, Console.CursorTop);
+            U.TitleNonEndline("Press \"s\" to stop looting...".PadRight(Console.WindowWidth), ConsoleColor.Yellow);
+            Console.SetCursorPosition(0, Console.WindowHeight - 1);
 
+            if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.S)
+            {
+                isLooting = false;
             }
         }
-        return itemsLoot;
+
+        return lootedItems;
     }
+
     public void Looting()
     {
-        var itemsAfterLoot = LootItems();
-        U.Title("===Summary===");
-        int count = 1;
-        // itemsAfterLoot.OrderBy(p => p.RateDrop).ToList().ForEach(p => Console.WriteLine(p.RateDrop)); // Check rate 
-        foreach (var item in itemsAfterLoot)
-        {
-            Console.WriteLine($"{count} - {item.Name} - {item.RateDrop}");
-            count++;
-        }
-        Console.WriteLine($"Total: {itemsAfterLoot.ToArray().Length} items");
+        // Start Loot
+        U.Title("Looting...");
+        var items = LootItems();
+        U.Title("You stopped loot.", ConsoleColor.Green);
+
+        // End Loot
+        U.Title("=== Summary ===");
+        items.Select((item, index) => new { Index = index + 1, Item = item })
+            .ToList()
+            .ForEach(x => Console.WriteLine($"{x.Index}. {x.Item.Name} - DropRate: {x.Item.RateDrop}"));
+
+        Console.WriteLine($"Total: {items.Count} items");
     }
 }
