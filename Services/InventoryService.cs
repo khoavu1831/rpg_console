@@ -6,6 +6,35 @@ namespace RPG_Console.Services;
 
 class InventoryService
 {
+	public List<(int ItemId, string? Name, string? Type, int Quantity)> GetInventoryItems(int playerId)
+	{
+		var inventoryWithItems = new List<(int, string?, string?, int)>();
+		using (var conn = ConnectDB.GetConnection())
+		{
+			conn.Open();
+			var sql = @"
+				SELECT ii.item_id, i.name, i.type_item, ii.quantity
+				FROM InventoryItems ii 
+				JOIN Items i ON i.id = ii.item_id
+				WHERE ii.player_id = @pid
+				ORDER BY i.name";
+			using (var cmd = new MySqlCommand(sql, conn))
+			{
+				cmd.Parameters.AddWithValue("@pid", playerId);
+				var reader = cmd.ExecuteReader();
+				while (reader.Read())
+				{
+					inventoryWithItems.Add((
+						Convert.ToInt32(reader["item_id"]),
+						reader["name"].ToString(),
+						reader["type_item"].ToString(),
+						Convert.ToInt32(reader["quantity"])
+					));
+				}
+			}
+		}
+		return inventoryWithItems;
+	}
 	public void AddItemToInventory(int playerId, int itemId, int quantity = 1)
 	{
 		using (var conn = ConnectDB.GetConnection())
@@ -33,53 +62,42 @@ class InventoryService
 			}
 		}
 	}
-
 	public void AddItemsToInventory(int playerId, List<Item> items)
 	{
 		var grouped = items.GroupBy(i => i.ID).Select(g => new { ItemId = g.Key, Qty = g.Count() });
 		foreach (var g in grouped) AddItemToInventory(playerId, g.ItemId, g.Qty);
 	}
-
-	public List<(int ItemId, string? Name, string? Type, int Quantity)> GetInventoryItems(int playerId)
-	{
-		var result = new List<(int, string?, string?, int)>();
-		using (var conn = ConnectDB.GetConnection())
-		{
-			conn.Open();
-			var sql = @"
-				SELECT ii.item_id, i.name, i.type_item, ii.quantity
-				FROM InventoryItems ii
-				JOIN Items i ON i.id = ii.item_id
-				WHERE ii.player_id = @pid
-				ORDER BY i.name";
-			using (var cmd = new MySqlCommand(sql, conn))
-			{
-				cmd.Parameters.AddWithValue("@pid", playerId);
-				var reader = cmd.ExecuteReader();
-				while (reader.Read())
-				{
-					result.Add((
-						Convert.ToInt32(reader["item_id"]),
-						reader["name"].ToString(),
-						reader["type_item"].ToString(),
-						Convert.ToInt32(reader["quantity"])
-					));
-				}
-			}
-		}
-		return result;
-	}
-
 	public void PrintInventory(Player player)
 	{
 		U.Title($"=== {player.Name}'s Inventory ===");
 		var items = GetInventoryItems(player.ID);
-		Console.WriteLine($"{"#",-4} {"Name",-20} {"Type",-10} {"Qty",-5}");
+		Console.WriteLine($"{"#",-4} {"Name",-20} {"Type",-10} {"Quantity",-5}");
 		if (items.Count == 0) { Console.WriteLine("Empty"); return; }
 		int idx = 1;
 		foreach (var it in items) Console.WriteLine($"{idx++,-4} {it.Name,-20} {it.Type,-10} {it.Quantity,-5}");
 	}
-
+	private void DecrementItem(int playerId, int itemId, int qty)
+	{
+		using (var conn = ConnectDB.GetConnection())
+		{
+			conn.Open();
+			var sql = "UPDATE InventoryItems SET quantity = quantity - @qty WHERE player_id = @pid AND item_id = @iid AND quantity >= @qty";
+			using (var cmd = new MySqlCommand(sql, conn))
+			{
+				cmd.Parameters.AddWithValue("@qty", qty);
+				cmd.Parameters.AddWithValue("@pid", playerId);
+				cmd.Parameters.AddWithValue("@iid", itemId);
+				cmd.ExecuteNonQuery();
+			}
+			var cleanup = "DELETE FROM InventoryItems WHERE player_id = @pid AND item_id = @iid AND quantity <= 0";
+			using (var cmd2 = new MySqlCommand(cleanup, conn))
+			{
+				cmd2.Parameters.AddWithValue("@pid", playerId);
+				cmd2.Parameters.AddWithValue("@iid", itemId);
+				cmd2.ExecuteNonQuery();
+			}
+		}
+	}
 	public bool UseItem(Player player, int itemId)
 	{
 		Item? item = null;
@@ -135,30 +153,6 @@ class InventoryService
 			}
 		}
 	}
-
-	private void DecrementItem(int playerId, int itemId, int qty)
-	{
-		using (var conn = ConnectDB.GetConnection())
-		{
-			conn.Open();
-			var sql = "UPDATE InventoryItems SET quantity = quantity - @qty WHERE player_id = @pid AND item_id = @iid AND quantity >= @qty";
-			using (var cmd = new MySqlCommand(sql, conn))
-			{
-				cmd.Parameters.AddWithValue("@qty", qty);
-				cmd.Parameters.AddWithValue("@pid", playerId);
-				cmd.Parameters.AddWithValue("@iid", itemId);
-				cmd.ExecuteNonQuery();
-			}
-			var cleanup = "DELETE FROM InventoryItems WHERE player_id = @pid AND item_id = @iid AND quantity <= 0";
-			using (var cmd2 = new MySqlCommand(cleanup, conn))
-			{
-				cmd2.Parameters.AddWithValue("@pid", playerId);
-				cmd2.Parameters.AddWithValue("@iid", itemId);
-				cmd2.ExecuteNonQuery();
-			}
-		}
-	}
-
 	public void EquipWeapon(Player player, int weaponId)
 	{
 		int wAtk = 0, wDef = 0;

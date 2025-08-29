@@ -1,3 +1,5 @@
+using MySql.Data.MySqlClient;
+using RPG_Console.Database;
 using U = RPG_Console.Common.Utils;
 
 namespace RPG_Console.Services;
@@ -7,7 +9,25 @@ class CombatService
 	private readonly MonsterService _monsterService = new();
 	private readonly InventoryService _inventoryService = new();
 	private static readonly Random _rand = new();
-
+	private void SavePlayer(Player player)
+	{
+		using (var conn = ConnectDB.GetConnection())
+		{
+			conn.Open();
+			var sql = "UPDATE Players SET level=@lv, exp=@exp, atk=@atk, def=@def, hp=@hp, monster_killed=@mk WHERE id=@id";
+			using (var cmd = new MySqlCommand(sql, conn))
+			{
+				cmd.Parameters.AddWithValue("@lv", player.Level);
+				cmd.Parameters.AddWithValue("@exp", player.Exp);
+				cmd.Parameters.AddWithValue("@atk", player.Attack);
+				cmd.Parameters.AddWithValue("@def", player.Def);
+				cmd.Parameters.AddWithValue("@hp", player.HP);
+				cmd.Parameters.AddWithValue("@mk", player.MonsterKilled);
+				cmd.Parameters.AddWithValue("@id", player.ID);
+				cmd.ExecuteNonQuery();
+			}
+		}
+	}
 	public void Fight(Player player)
 	{
 		var monster = _monsterService.GetRandomMonsterForLevel(player.Level);
@@ -18,9 +38,9 @@ class CombatService
 
 		while (mHP > 0 && player.HP > 0)
 		{
-			Console.WriteLine("\n1. Run (lose some EXP)   2. Attack");
+			Console.WriteLine("\n1. Attack  |  0. Run (lose some EXP)");
 			int choice = U.EnterOption("Choose: ");
-			if (choice == 1)
+			if (choice == 0)
 			{
 				int expLoss = Math.Max(1, (int)(player.Level * 2));
 				player.Exp = Math.Max(0, player.Exp - expLoss);
@@ -28,7 +48,7 @@ class CombatService
 				U.WarningMsg($"You ran away and lost {expLoss} EXP.");
 				return;
 			}
-			else if (choice != 2)
+			else if (choice != 1)
 			{
 				U.WarningMsg("Invalid choice.");
 				continue;
@@ -45,7 +65,8 @@ class CombatService
 			else
 			{
 				// Monster attack with delay 2-3s
-				int wait = _rand.Next(2000, 3001);
+				int wait = _rand.Next(1000, 3000);
+				U.TitleNonEndline("Enemy acting...", ConsoleColor.Red);
 				Thread.Sleep(wait);
 				int dmg = Math.Max(1, monster.Attack - Math.Max(0, player.Def / 3));
 				player.HP = Math.Max(0, player.HP - dmg);
@@ -66,9 +87,10 @@ class CombatService
 		player.MonsterKilled += 1;
 		GainExpAndLevelUp(player, monster.ExpDrop);
 
+		// Rate drop weapons
 		if (_rand.NextDouble() < 0.15) // 15% chance
 		{
-			int weaponId = _rand.Next(1, 10); 
+			int weaponId = _rand.Next(1, 10);
 			GrantWeapon(player, weaponId);
 		}
 
@@ -81,7 +103,7 @@ class CombatService
 		{
 			conn.Open();
 			var check = "SELECT COUNT(*) FROM InventoryWeapons WHERE player_id=@pid AND weapon_id=@wid";
-			using (var cmd = new MySql.Data.MySqlClient.MySqlCommand(check, conn))
+			using (var cmd = new MySqlCommand(check, conn))
 			{
 				cmd.Parameters.AddWithValue("@pid", player.ID);
 				cmd.Parameters.AddWithValue("@wid", weaponId);
@@ -89,7 +111,7 @@ class CombatService
 				if (cnt == 0)
 				{
 					var ins = "INSERT INTO InventoryWeapons (player_id, weapon_id, is_equipped) VALUES (@pid, @wid, 0)";
-					using (var cmd2 = new MySql.Data.MySqlClient.MySqlCommand(ins, conn))
+					using (var cmd2 = new MySqlCommand(ins, conn))
 					{
 						cmd2.Parameters.AddWithValue("@pid", player.ID);
 						cmd2.Parameters.AddWithValue("@wid", weaponId);
@@ -100,7 +122,6 @@ class CombatService
 		}
 		U.Title("You found an equipment!", ConsoleColor.Cyan);
 	}
-
 	private void GainExpAndLevelUp(Player player, int expGain)
 	{
 		player.Exp += expGain;
@@ -117,25 +138,5 @@ class CombatService
 			leveled = true;
 		}
 		if (leveled) U.Title($"Level Up! You are now level {player.Level}. Stats increased.", ConsoleColor.Magenta);
-	}
-
-	private void SavePlayer(Player player)
-	{
-		using (var conn = RPG_Console.Database.ConnectDB.GetConnection())
-		{
-			conn.Open();
-			var sql = "UPDATE Players SET level=@lv, exp=@exp, atk=@atk, def=@def, hp=@hp, monster_killed=@mk WHERE id=@id";
-			using (var cmd = new MySql.Data.MySqlClient.MySqlCommand(sql, conn))
-			{
-				cmd.Parameters.AddWithValue("@lv", player.Level);
-				cmd.Parameters.AddWithValue("@exp", player.Exp);
-				cmd.Parameters.AddWithValue("@atk", player.Attack);
-				cmd.Parameters.AddWithValue("@def", player.Def);
-				cmd.Parameters.AddWithValue("@hp", player.HP);
-				cmd.Parameters.AddWithValue("@mk", player.MonsterKilled);
-				cmd.Parameters.AddWithValue("@id", player.ID);
-				cmd.ExecuteNonQuery();
-			}
-		}
 	}
 }
