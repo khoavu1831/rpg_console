@@ -24,6 +24,7 @@ class PlayerService
                         Level = Convert.ToInt32(reader["level"]),
                         HP = Convert.ToInt32(reader["hp"]),
                         Attack = Convert.ToInt32(reader["atk"]),
+                        Def = Convert.ToInt32(reader["def"]),
                         Exp = Convert.ToInt32(reader["exp"]),
                         MonsterKilled = Convert.ToInt32(reader["monster_killed"])
                     });
@@ -56,7 +57,7 @@ class PlayerService
 
         if (player != null)
         {
-            Console.WriteLine($"Name: {player.Name,-20}\nLevel: {player.Level,-10}\nHP: {player.HP,-10}\nAttack: {player.Attack,-10}\nMonster Killed: {player.MonsterKilled,-10}");
+            Console.WriteLine($"Name: {player.Name,-20}\nLevel: {player.Level,-10}\nEXP: {player.Exp,-10}\nHP: {player.HP,-10}\nAttack: {player.Attack,-10}\nMonster Killed: {player.MonsterKilled,-10}");
         }
     }
     public void PrintRanking()

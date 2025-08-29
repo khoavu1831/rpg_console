@@ -32,3 +32,13 @@ INSERT INTO Items (name, type_item, hp_restore, attack_buff, def_buff, rate_drop
 ('Energy Drink', 'potion', 30, 10, 0, 0.10),
 ('Cocacola', 'potion', 0, 0, 25, 0.08);
 
+INSERT INTO Weapons (name, atk, def) VALUES
+('Wooden Sword', 5, 0),
+('Bronze Sword', 10, 2),
+('Iron Sword', 15, 4),
+('Steel Sword', 22, 6),
+('Knight Shield', 0, 12),
+('Bronze Shield', 0, 6),
+('Leather Armor', 2, 8),
+('Chainmail', 4, 12),
+('War Axe', 25, -2);
