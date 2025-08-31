@@ -1,8 +1,8 @@
 using MySql.Data.MySqlClient;
-using RPG_Console.Database;
-using U = RPG_Console.Common.Utils;
+using rpg_console.Gamecuakhoa.Database;
+using U = rpg_console.Gamecuakhoa.Common.Utils;
 
-namespace RPG_Console.Services;
+namespace rpg_console.Gamecuakhoa.Services;
 
 class CombatService
 {
@@ -99,7 +99,7 @@ class CombatService
 
 	private void GrantWeapon(Player player, int weaponId)
 	{
-		using (var conn = RPG_Console.Database.ConnectDB.GetConnection())
+		using (var conn = ConnectDB.GetConnection())
 		{
 			conn.Open();
 			var check = "SELECT COUNT(*) FROM InventoryWeapons WHERE player_id=@pid AND weapon_id=@wid";

@@ -1,5 +1,6 @@
-using U = RPG_Console.Common.Utils;
-namespace RPG_Console.Services;
+using U = rpg_console.Gamecuakhoa.Common.Utils;
+
+namespace rpg_console.Gamecuakhoa.Services;
 
 class LootingService
 {

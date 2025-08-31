@@ -1,4 +1,4 @@
-namespace RPG_Console.Common;
+namespace rpg_console.Gamecuakhoa.Common;
 
 public static class Utils
 {

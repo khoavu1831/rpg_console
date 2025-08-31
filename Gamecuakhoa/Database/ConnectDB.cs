@@ -1,6 +1,6 @@
 using MySql.Data.MySqlClient;
 
-namespace RPG_Console.Database;
+namespace rpg_console.Gamecuakhoa.Database;
 
 public class ConnectDB
 {

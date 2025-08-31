@@ -1,7 +1,7 @@
 using MySql.Data.MySqlClient;
-using RPG_Console.Database;
+using rpg_console.Gamecuakhoa.Database;
 
-namespace RPG_Console.Services;
+namespace rpg_console.Gamecuakhoa.Services;
 
 class ItemService
 {

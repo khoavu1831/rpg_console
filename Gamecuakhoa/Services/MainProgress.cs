@@ -1,5 +1,6 @@
-using RPG_Console.Services;
-using U = RPG_Console.Common.Utils;
+using U = rpg_console.Gamecuakhoa.Common.Utils;
+
+namespace rpg_console.Gamecuakhoa.Services;
 class MainProgress
 {
 	private bool isRunning = true;
@@ -51,7 +52,7 @@ class MainProgress
 					isRunning = false;
 					break;
 				default:
-					U.WarningMsg("Please choose from 1 to 5!");
+					U.WarningMsg("Please choose from 0 to 5!");
 					break;
 			}
 		}
